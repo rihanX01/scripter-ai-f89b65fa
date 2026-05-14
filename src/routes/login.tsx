@@ -130,12 +130,12 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:py-12 grid-bg">
+    <div className="min-h-[100dvh] w-full overflow-y-auto grid-bg flex justify-center items-start sm:items-center px-4 py-6 sm:py-12">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md glass-strong rounded-3xl p-6 sm:p-8"
+        className="w-full max-w-md glass-strong rounded-3xl p-5 sm:p-8 my-auto"
       >
         <Link to="/" className="flex items-center gap-2 mb-6 sm:mb-8 w-fit">
           <div className="size-9 rounded-lg bg-gradient-to-br from-[var(--neon)] to-[var(--plasma)] flex items-center justify-center">
