@@ -231,8 +231,14 @@ Generate the script pack now. Be ruthless about quality. No filler. Hook hard. L
     });
 
     if (!res.ok) {
-      // Roll back the quota consumption on AI failure
-      await supabaseAdmin.rpc("admin_reset_usage" as never, { _target: userId } as never).catch(() => {});
+      // Best-effort refund of the consumed quota on AI failure
+      try {
+        const col = data.format === "short" ? "shorts_used" : "longs_used";
+        await supabaseAdmin
+          .from("usage_counters")
+          .update({ [col]: Math.max(0, (data.format === "short" ? usageData.shorts_used : usageData.longs_used) - 1) })
+          .eq("user_id", userId);
+      } catch { /* ignore */ }
       const t = await res.text();
       if (res.status === 429) throw new Error("Rate limit reached. Please try again in a moment.");
       if (res.status === 402) throw new Error("AI credits exhausted. Add credits to continue.");
