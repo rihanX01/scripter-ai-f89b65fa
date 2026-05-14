@@ -1,18 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sparkles, Wand2, Copy, Check, Download, RotateCcw, ArrowLeft,
-  Image as ImageIcon, Video, Hash, Gauge, Film, Loader2, Flame,
+  Image as ImageIcon, Video, Hash, Gauge, Film, Loader2, Flame, Timer, Zap,
 } from "lucide-react";
-import { generateScript, type GenerateResult } from "@/lib/generate.functions";
+import { generateScript, getMyUsage, type GenerateResult } from "@/lib/generate.functions";
 import { Nav } from "@/components/site/Nav";
 import { Particles } from "@/components/site/Particles";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/generate")({
   component: GeneratePage,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/login" });
+  },
   head: () => ({
     meta: [
       { title: "Studio — ShortForge AI Ultra" },
@@ -27,12 +32,15 @@ const CATEGORIES = [
   "Space","History","Cinematic","Conspiracy","Viral",
 ];
 
+const SHORT_PRESETS = [60, 86, 100, 150];
+const LONG_PRESETS  = [500, 800, 1100, 1500];
+
 type Form = {
   topic: string;
   category: string;
   language: "english" | "hindi" | "hinglish";
   format: "short" | "long";
-  tier: "free" | "pro" | "max";
+  target_words: number;
 };
 
 function GeneratePage() {
@@ -41,15 +49,31 @@ function GeneratePage() {
     category: "auto",
     language: "english",
     format: "short",
-    tier: "free",
+    target_words: 95,
   });
   const [result, setResult] = useState<GenerateResult | null>(null);
 
   const fn = useServerFn(generateScript);
+  const usageFn = useServerFn(getMyUsage);
+  const qc = useQueryClient();
+
+  const usageQuery = useQuery({
+    queryKey: ["my-usage"],
+    queryFn: () => usageFn(),
+    refetchInterval: 60_000,
+  });
+
   const mutation = useMutation({
     mutationFn: (input: Form) => fn({ data: input }),
-    onSuccess: (data) => setResult(data),
+    onSuccess: (data) => {
+      setResult(data);
+      qc.setQueryData(["my-usage"], data.usage);
+    },
   });
+
+  const setFormat = (f: "short" | "long") => {
+    setForm((p) => ({ ...p, format: f, target_words: f === "short" ? 95 : 900 }));
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
