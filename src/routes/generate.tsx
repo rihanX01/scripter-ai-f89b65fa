@@ -127,18 +127,41 @@ function GeneratePage() {
                 />
               </Field>
 
+              <UsageBadge usage={usageQuery.data} />
+
               <Field label="Format">
                 <div className="grid grid-cols-2 gap-2">
                   {(["short","long"] as const).map((f) => (
                     <button key={f} type="button"
-                      onClick={() => setForm({ ...form, format: f })}
+                      onClick={() => setFormat(f)}
                       className={`rounded-xl py-2.5 text-sm font-medium transition-all ${
                         form.format === f ? "btn-hero" : "glass hover:bg-white/5"
                       }`}>
-                      {f === "short" ? "Short · 86–100w" : "Long · 700–1100w"}
+                      {f === "short" ? "Short" : "Long-form"}
                     </button>
                   ))}
                 </div>
+              </Field>
+
+              <Field label={`Target words · ${form.target_words}`}>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {(form.format === "short" ? SHORT_PRESETS : LONG_PRESETS).map((w) => (
+                    <button key={w} type="button"
+                      onClick={() => setForm({ ...form, target_words: w })}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-mono transition-all ${
+                        form.target_words === w ? "bg-[var(--neon)] text-background" : "glass hover:bg-white/5"
+                      }`}>{w}w</button>
+                  ))}
+                </div>
+                <input
+                  type="range"
+                  min={form.format === "short" ? 40 : 300}
+                  max={form.format === "short" ? 250 : 2000}
+                  step={form.format === "short" ? 5 : 50}
+                  value={form.target_words}
+                  onChange={(e) => setForm({ ...form, target_words: Number(e.target.value) })}
+                  className="w-full accent-[var(--neon)]"
+                />
               </Field>
 
               <Field label="Language">
@@ -165,18 +188,6 @@ function GeneratePage() {
                     </option>
                   ))}
                 </select>
-              </Field>
-
-              <Field label="Quality tier">
-                <div className="grid grid-cols-3 gap-2">
-                  {(["free","pro","max"] as const).map((t) => (
-                    <button key={t} type="button"
-                      onClick={() => setForm({ ...form, tier: t })}
-                      className={`rounded-xl py-2 text-xs font-medium uppercase tracking-wider transition-all ${
-                        form.tier === t ? "btn-hero" : "glass hover:bg-white/5"
-                      }`}>{t}</button>
-                  ))}
-                </div>
               </Field>
 
               <button
