@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authVersion, setAuthVersion] = useState(0);
 
   const loadExtras = async (uid: string) => {
     const [{ data: prof }, { data: roles }] = await Promise.all([
@@ -38,22 +39,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refresh = async () => {
+    setLoading(true);
     const { data } = await supabase.auth.getSession();
     setSession(data.session);
     if (data.session?.user) await loadExtras(data.session.user.id);
     else { setProfile(null); setIsAdmin(false); }
+    setLoading(false);
   };
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      const nextVersion = authVersion + 1;
+      setAuthVersion(nextVersion);
       setSession(s);
       if (s?.user) {
-        setTimeout(() => loadExtras(s.user.id), 0);
+        setLoading(true);
+        setTimeout(async () => {
+          await loadExtras(s.user.id);
+          setLoading(false);
+        }, 0);
       } else {
         setProfile(null); setIsAdmin(false);
+        setLoading(false);
       }
     });
-    refresh().finally(() => setLoading(false));
+    refresh();
     return () => sub.subscription.unsubscribe();
   }, []);
 
