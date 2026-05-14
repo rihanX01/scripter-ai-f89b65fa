@@ -25,13 +25,22 @@ function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [pendingVerify, setPendingVerify] = useState<string | null>(null);
 
+  const authMessage = (message?: string) => {
+    const text = (message ?? "").toLowerCase();
+    if (text.includes("invalid login credentials")) return "Email or password is incorrect. Create an account first or reset your password.";
+    if (text.includes("weak_password")) return "Choose a stronger password that has not been used in data breaches.";
+    if (text.includes("password") && text.includes("weak")) return "Choose a stronger password that has not been used in data breaches.";
+    if (text.includes("already registered") || text.includes("already exists")) return "This email already has an account. Use Sign in instead.";
+    return message ?? "Authentication failed. Please try again.";
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/generate`,
@@ -44,14 +53,13 @@ function LoginPage() {
           toast.success("Account created. Check your email to verify.");
           return;
         }
-        // Account created — send user to sign-in page as requested.
-        toast.success("Account created. Please sign in.");
+        toast.success("Account created. Sign in with your email and password.");
         await supabase.auth.signOut();
         setMode("signin");
         setPassword("");
         return;
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) {
           if (error.message.toLowerCase().includes("email not confirmed")) {
             setPendingVerify(email);
@@ -61,13 +69,13 @@ function LoginPage() {
           throw error;
         }
         if (!data.session) throw new Error("No session returned");
+        await supabase.auth.getSession();
         toast.success("Welcome back.");
-        // Hard nav so the protected route's beforeLoad sees the persisted session.
-        window.location.assign("/generate");
+        await nav({ to: "/generate", replace: true });
         return;
       }
     } catch (err: any) {
-      toast.error(err.message ?? "Auth failed");
+      toast.error(authMessage(err.message));
     } finally {
       setBusy(false);
     }
