@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAdminLogin } from "@/lib/admin-security.functions";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -13,13 +14,16 @@ export const Route = createFileRoute("/admin/login")({
   component: AdminLoginPage,
 });
 
+const ADMIN_EMAIL = "rihan@gmail.com";
+
 const fieldCls =
   "w-full h-11 rounded-xl bg-background/60 border border-border pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--neon)] focus:ring-2 focus:ring-[var(--neon)]/30 transition";
 
 function AdminLoginPage() {
   const nav = useNavigate();
   const record = useServerFn(recordAdminLogin);
-  const [email, setEmail] = useState("");
+  const { refresh } = useAuth();
+  const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
@@ -74,6 +78,7 @@ function AdminLoginPage() {
       }
       try { await record({ data: { email: data.session.user.email ?? undefined, success: true } }); } catch {}
       sessionStorage.setItem("admin_login_at", String(Date.now()));
+      await refresh();
       toast.success("Welcome, Administrator.");
       await nav({ to: "/admin", replace: true });
     } catch (err: any) {
