@@ -790,7 +790,6 @@ function ResearchView({ research }: { research: DeepResearchResult }) {
   return (
     <div className="min-w-0">
       <div className="flex flex-wrap items-center justify-end gap-2 mb-4">
-        <CopyBtn text={research.script} />
         <button onClick={downloadMd} className="btn-hero rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1.5">
           <Download className="size-3.5" /> .md
         </button>
