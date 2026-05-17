@@ -17,6 +17,7 @@ export type GenerateInput = z.infer<typeof inputSchema>;
 const researchInputSchema = z.object({
   topic: z.string().trim().min(3).max(500),
   language: z.enum(["english", "hindi", "hinglish"]).default("english"),
+  script: z.string().trim().max(20000).optional(),
 });
 
 export type DeepResearchResult = {
@@ -361,7 +362,7 @@ RULES:
 
     const user = `TOPIC: ${data.topic}
 OUTPUT LANGUAGE (for script + summary): ${data.language}
-
+${data.script ? `\nBASE SCRIPT (research MUST be grounded in and expand on this script — extract claims, verify them, find sources that support/contextualize each beat, and rewrite the final "script" field as a research-backed version of this):\n"""\n${data.script}\n"""\n` : ""}
 Do deep research and emit the structured payload now.`;
 
     const model = plan === "max" ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
