@@ -310,7 +310,7 @@ const RESEARCH_TOOL = [{
         sources: {
           type: "array",
           minItems: 5,
-          maxItems: 15,
+          maxItems: 30,
           items: {
             type: "object",
             additionalProperties: false,
