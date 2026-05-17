@@ -853,14 +853,6 @@ function ResearchView({ research }: { research: DeepResearchResult }) {
         </Section>
       </div>
 
-      <div className="mt-5">
-        <Section title="Research-backed script">
-          <div className="glass rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line font-display">
-            <div className="flex justify-end mb-2"><CopyBtn text={research.script} /></div>
-            {research.script}
-          </div>
-        </Section>
-      </div>
     </div>
   );
 }
