@@ -255,6 +255,52 @@ function GeneratePage() {
 
             {/* OUTPUT PANEL */}
             <div className="space-y-5">
+              {/* Deep Research CTA — always visible at top of output for paid users */}
+              {isPaid && (
+                <div className="glass-strong rounded-3xl p-5 border border-[var(--plasma)]/30 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-gradient-to-br from-[var(--plasma)] to-[var(--neon)] flex items-center justify-center">
+                      <Telescope className="size-5 text-background" />
+                    </div>
+                    <div>
+                      <div className="font-display text-base font-bold">Deep Research</div>
+                      <div className="text-[11px] text-muted-foreground">Web-grade findings, stats, and credible source links — plus a research-backed script.</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={researchMutation.isPending || form.topic.trim().length < 3}
+                    onClick={() => {
+                      setResearch(null);
+                      researchMutation.mutate({ topic: form.topic, language: form.language });
+                    }}
+                    className="rounded-xl px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-[var(--plasma)] to-[var(--neon)] text-background inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                  >
+                    {researchMutation.isPending ? (
+                      <><Loader2 className="size-4 animate-spin" /> Researching…</>
+                    ) : (
+                      <><Telescope className="size-4" /> Run Deep Research</>
+                    )}
+                  </button>
+                </div>
+              )}
+              {!isPaid && (
+                <div className="glass rounded-3xl p-5 border border-white/10 flex flex-wrap items-center justify-between gap-3 opacity-90">
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center">
+                      <Lock className="size-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <div className="font-display text-base font-bold">Deep Research <span className="text-[10px] font-mono text-[var(--plasma)] ml-1">PRO / MAX</span></div>
+                      <div className="text-[11px] text-muted-foreground">Research any topic with credible source links and a research-backed script.</div>
+                    </div>
+                  </div>
+                  <Link to="/" hash="pricing" className="rounded-xl px-4 py-2.5 text-sm font-medium glass hover:bg-white/5 inline-flex items-center gap-2 shrink-0">
+                    Upgrade
+                  </Link>
+                </div>
+              )}
+
               {/* Ad: free users only — hidden for pro/max */}
               <AdSlot slot="studio-top" format="horizontal" minHeight={90} />
 
