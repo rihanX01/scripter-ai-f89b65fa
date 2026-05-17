@@ -253,16 +253,15 @@ function GeneratePage() {
                   onCheckedChange={(checked) => {
                     if (!isPaid) return;
                     setResearchEnabled(checked);
-                    if (checked) {
-                      if (form.topic.trim().length < 3) return;
-                      setResearch(null);
-                      researchMutation.mutate({ topic: form.topic, language: form.language });
-                    } else {
-                      setResearch(null);
-                    }
+                    if (!checked) setResearch(null);
                   }}
                 />
               </div>
+              {isPaid && researchEnabled && (
+                <p className="mt-2 text-[10px] text-muted-foreground font-mono">
+                  Research will run automatically after the script generates, grounded in it.
+                </p>
+              )}
 
               {researchMutation.error && (
                 <div className="mt-3 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg p-3">
