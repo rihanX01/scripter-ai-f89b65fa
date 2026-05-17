@@ -277,43 +277,14 @@ function GeneratePage() {
             </motion.form>
 
             {/* OUTPUT PANEL */}
-            <div className="space-y-5">
-              {/* Deep Research CTA — always visible at top of output for paid users */}
-              {isPaid && (
-                <div className="glass-strong rounded-3xl p-5 border border-[var(--plasma)]/30 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-xl bg-gradient-to-br from-[var(--plasma)] to-[var(--neon)] flex items-center justify-center">
-                      <Telescope className="size-5 text-background" />
-                    </div>
-                    <div>
-                      <div className="font-display text-base font-bold">Deep Research</div>
-                      <div className="text-[11px] text-muted-foreground">Web-grade findings, stats, and credible source links — plus a research-backed script.</div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={researchMutation.isPending || form.topic.trim().length < 3}
-                    onClick={() => {
-                      setResearch(null);
-                      researchMutation.mutate({ topic: form.topic, language: form.language });
-                    }}
-                    className="rounded-xl px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-[var(--plasma)] to-[var(--neon)] text-background inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                  >
-                    {researchMutation.isPending ? (
-                      <><Loader2 className="size-4 animate-spin" /> Researching…</>
-                    ) : (
-                      <><Telescope className="size-4" /> Run Deep Research</>
-                    )}
-                  </button>
-                </div>
-              )}
+            <div className="space-y-5 min-w-0">
               {!isPaid && (
                 <div className="glass rounded-3xl p-5 border border-white/10 flex flex-wrap items-center justify-between gap-3 opacity-90">
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
                       <Lock className="size-4 text-muted-foreground" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="font-display text-base font-bold">Deep Research <span className="text-[10px] font-mono text-[var(--plasma)] ml-1">PRO / MAX</span></div>
                       <div className="text-[11px] text-muted-foreground">Research any topic with credible source links and a research-backed script.</div>
                     </div>
@@ -326,25 +297,6 @@ function GeneratePage() {
 
               {/* Ad: free users only — hidden for pro/max */}
               <AdSlot slot="studio-top" format="horizontal" minHeight={90} />
-
-              <AnimatePresence>
-                {(researchMutation.isPending || research) && (
-                  <motion.div
-                    key="research"
-                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  >
-                    {researchMutation.isPending && !research ? (
-                      <div className="glass-strong rounded-3xl p-8 text-center">
-                        <Loader2 className="size-6 animate-spin mx-auto mb-3 text-[var(--plasma)]" />
-                        <div className="font-display text-lg">Deep researching the topic…</div>
-                        <div className="text-xs text-muted-foreground mt-1">Pulling findings, stats, and credible sources.</div>
-                      </div>
-                    ) : research ? (
-                      <ResearchView research={research} />
-                    ) : null}
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               <AnimatePresence mode="wait">
                 {!result && !mutation.isPending && (
@@ -375,6 +327,82 @@ function GeneratePage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Research panel — only after script is generated, with show/hide toggle */}
+              {result && isPaid && (
+                <div className="glass-strong rounded-3xl border border-[var(--plasma)]/30 overflow-hidden">
+                  <div className="flex items-center justify-between gap-3 p-4 md:p-5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-10 rounded-xl bg-gradient-to-br from-[var(--plasma)] to-[var(--neon)] flex items-center justify-center shrink-0">
+                        <Telescope className="size-5 text-background" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-display text-base font-bold">Deep Research</div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {researchMutation.isPending
+                            ? "Researching the web — grounding in your script…"
+                            : research
+                              ? "Credible sources · research-backed script"
+                              : "Research grounded in the generated script"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!researchMutation.isPending && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setResearch(null);
+                            researchMutation.mutate({ topic: form.topic, language: form.language, script: result.script });
+                            setResearchOpen(true);
+                          }}
+                          className="rounded-lg px-3 py-2 text-xs font-medium bg-gradient-to-r from-[var(--plasma)] to-[var(--neon)] text-background inline-flex items-center gap-1.5"
+                        >
+                          <Telescope className="size-3.5" /> {research ? "Re-run" : "Run"}
+                        </button>
+                      )}
+                      {(research || researchMutation.isPending) && (
+                        <button
+                          type="button"
+                          onClick={() => setResearchOpen((v) => !v)}
+                          className="rounded-lg px-3 py-2 text-xs font-medium glass hover:bg-white/5"
+                        >
+                          {researchOpen ? "Hide" : "Show"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {researchOpen && (researchMutation.isPending || research) && (
+                      <motion.div
+                        key="research-body"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 md:px-5 pb-5 min-w-0">
+                          {researchMutation.isPending && !research ? (
+                            <div className="text-center py-8">
+                              <Loader2 className="size-6 animate-spin mx-auto mb-3 text-[var(--plasma)]" />
+                              <div className="font-display text-base">Deep researching…</div>
+                              <div className="text-xs text-muted-foreground mt-1">Pulling findings, stats, and credible sources.</div>
+                            </div>
+                          ) : research ? (
+                            <ResearchView research={research} />
+                          ) : null}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  {researchMutation.error && (
+                    <div className="mx-4 md:mx-5 mb-4 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                      {(researchMutation.error as Error).message}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Ad: free users only — hidden for pro/max */}
               <AdSlot slot="studio-bottom" format="auto" minHeight={250} />
