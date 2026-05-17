@@ -6,12 +6,14 @@ import { useEffect, useState } from "react";
 import {
   Sparkles, Wand2, Copy, Check, Download, RotateCcw, ArrowLeft,
   Image as ImageIcon, Video, Hash, Gauge, Film, Loader2, Flame, Timer, Zap,
+  Telescope, Lock, ExternalLink,
 } from "lucide-react";
-import { generateScript, getMyUsage, type GenerateResult } from "@/lib/generate.functions";
+import { generateScript, getMyUsage, deepResearch, type GenerateResult, type DeepResearchResult } from "@/lib/generate.functions";
 import { Nav } from "@/components/site/Nav";
 import { Particles } from "@/components/site/Particles";
 import { AdSlot } from "@/components/site/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/generate")({
   component: GeneratePage,
@@ -45,6 +47,10 @@ type Form = {
 };
 
 function GeneratePage() {
+  const { profile } = useAuth();
+  const plan = (profile?.plan as "free" | "pro" | "max" | undefined) ?? "free";
+  const isPaid = plan === "pro" || plan === "max";
+
   const [form, setForm] = useState<Form>({
     topic: "",
     category: "auto",
@@ -53,9 +59,11 @@ function GeneratePage() {
     target_words: 95,
   });
   const [result, setResult] = useState<GenerateResult | null>(null);
+  const [research, setResearch] = useState<DeepResearchResult | null>(null);
 
   const fn = useServerFn(generateScript);
   const usageFn = useServerFn(getMyUsage);
+  const researchFn = useServerFn(deepResearch);
   const qc = useQueryClient();
 
   const usageQuery = useQuery({
@@ -70,6 +78,11 @@ function GeneratePage() {
       setResult(data);
       qc.setQueryData(["my-usage"], data.usage);
     },
+  });
+
+  const researchMutation = useMutation({
+    mutationFn: (input: { topic: string; language: Form["language"] }) => researchFn({ data: input }),
+    onSuccess: (data) => setResearch(data),
   });
 
   const setFormat = (f: "short" | "long") => {
@@ -203,6 +216,36 @@ function GeneratePage() {
                 )}
               </button>
 
+              <button
+                type="button"
+                disabled={!isPaid || researchMutation.isPending || form.topic.trim().length < 3}
+                onClick={() => {
+                  if (!isPaid) return;
+                  setResearch(null);
+                  researchMutation.mutate({ topic: form.topic, language: form.language });
+                }}
+                title={isPaid ? "Deep Research with credible sources" : "Upgrade to Pro or Max to unlock Deep Research"}
+                className={`w-full mt-2 rounded-xl py-3 inline-flex items-center justify-center gap-2 text-sm font-medium transition-all border ${
+                  isPaid
+                    ? "border-[var(--plasma)]/40 bg-[var(--plasma)]/10 hover:bg-[var(--plasma)]/20 text-foreground"
+                    : "border-white/10 bg-white/[0.02] text-muted-foreground cursor-not-allowed"
+                } disabled:opacity-60`}
+              >
+                {researchMutation.isPending ? (
+                  <><Loader2 className="size-4 animate-spin" /> Researching the web…</>
+                ) : isPaid ? (
+                  <><Telescope className="size-4" /> Deep Research + Sources</>
+                ) : (
+                  <><Lock className="size-3.5" /> Deep Research · Pro / Max</>
+                )}
+              </button>
+
+              {researchMutation.error && (
+                <div className="mt-3 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                  {(researchMutation.error as Error).message}
+                </div>
+              )}
+
               {mutation.error && (
                 <div className="mt-3 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg p-3">
                   {(mutation.error as Error).message}
@@ -214,6 +257,25 @@ function GeneratePage() {
             <div className="space-y-5">
               {/* Ad: free users only — hidden for pro/max */}
               <AdSlot slot="studio-top" format="horizontal" minHeight={90} />
+
+              <AnimatePresence>
+                {(researchMutation.isPending || research) && (
+                  <motion.div
+                    key="research"
+                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  >
+                    {researchMutation.isPending && !research ? (
+                      <div className="glass-strong rounded-3xl p-8 text-center">
+                        <Loader2 className="size-6 animate-spin mx-auto mb-3 text-[var(--plasma)]" />
+                        <div className="font-display text-lg">Deep researching the topic…</div>
+                        <div className="text-xs text-muted-foreground mt-1">Pulling findings, stats, and credible sources.</div>
+                      </div>
+                    ) : research ? (
+                      <ResearchView research={research} />
+                    ) : null}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <AnimatePresence mode="wait">
                 {!result && !mutation.isPending && (
@@ -597,6 +659,123 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div>
       <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--neon)] mb-2">{title}</div>
       {children}
+    </div>
+  );
+}
+
+function ResearchView({ research }: { research: DeepResearchResult }) {
+  const downloadMd = () => {
+    const md = [
+      `# Deep Research — ${research.topic}`,
+      ``,
+      `## Summary`,
+      research.summary,
+      ``,
+      `## Key findings`,
+      ...research.key_findings.map((k) => `- ${k}`),
+      ``,
+      `## Stats`,
+      ...research.stats.map((s) => `- **${s.label}:** ${s.value}`),
+      ``,
+      `## Viral angles`,
+      ...research.angles.map((a) => `- ${a}`),
+      ``,
+      `## Sources`,
+      ...research.sources.map((s) => `- [${s.title}](${s.url}) — ${s.snippet}`),
+      ``,
+      `## Research-backed script`,
+      research.script,
+    ].join("\n");
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "deep-research.md"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="glass-strong rounded-3xl p-6 border border-[var(--plasma)]/20">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-2">
+          <div className="size-9 rounded-xl bg-gradient-to-br from-[var(--plasma)] to-[var(--neon)] flex items-center justify-center">
+            <Telescope className="size-4 text-background" />
+          </div>
+          <div>
+            <div className="font-display text-lg font-bold">Deep Research</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">credible sources · research-backed script</div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <CopyBtn text={research.script} />
+          <button onClick={downloadMd} className="btn-hero rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1.5">
+            <Download className="size-3.5" /> .md
+          </button>
+        </div>
+      </div>
+
+      <Section title="Summary">
+        <div className="glass rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line">{research.summary}</div>
+      </Section>
+
+      <div className="grid md:grid-cols-2 gap-4 mt-5">
+        <Section title="Key findings">
+          <ul className="space-y-1.5">
+            {research.key_findings.map((k, i) => (
+              <li key={i} className="glass rounded-lg px-3 py-2 text-xs leading-relaxed flex gap-2">
+                <span className="text-[var(--neon)] font-mono shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                <span>{k}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+        <Section title="Stats & numbers">
+          <ul className="space-y-1.5">
+            {research.stats.map((s, i) => (
+              <li key={i} className="glass rounded-lg px-3 py-2 text-xs">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                <div className="font-display text-sm">{s.value}</div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      </div>
+
+      <div className="mt-5">
+        <Section title="Untapped viral angles">
+          <div className="flex flex-wrap gap-2">
+            {research.angles.map((a, i) => (
+              <span key={i} className="text-xs bg-[var(--plasma)]/10 border border-[var(--plasma)]/30 rounded-full px-3 py-1.5">{a}</span>
+            ))}
+          </div>
+        </Section>
+      </div>
+
+      <div className="mt-5">
+        <Section title={`Credible sources (${research.sources.length})`}>
+          <ul className="space-y-2">
+            {research.sources.map((s, i) => (
+              <li key={i} className="glass rounded-xl p-3">
+                <a href={s.url} target="_blank" rel="noopener noreferrer"
+                  className="text-sm font-medium text-foreground hover:text-[var(--neon)] inline-flex items-center gap-1.5">
+                  <ExternalLink className="size-3.5 shrink-0" /> {s.title}
+                </a>
+                <div className="text-[10px] font-mono text-muted-foreground truncate mt-0.5">{s.url}</div>
+                <div className="text-xs text-foreground/75 mt-1.5 leading-relaxed">{s.snippet}</div>
+              </li>
+            ))}
+          </ul>
+          <div className="text-[10px] text-muted-foreground/70 mt-2 italic">Always verify sources before publishing — AI can occasionally cite outdated or imprecise pages.</div>
+        </Section>
+      </div>
+
+      <div className="mt-5">
+        <Section title="Research-backed script">
+          <div className="glass rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line font-display">
+            <div className="flex justify-end mb-2"><CopyBtn text={research.script} /></div>
+            {research.script}
+          </div>
+        </Section>
+      </div>
     </div>
   );
 }
