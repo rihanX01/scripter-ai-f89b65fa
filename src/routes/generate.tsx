@@ -101,6 +101,10 @@ function GeneratePage() {
     if (!form.topic.trim() || form.topic.trim().length < 3) return;
     setResult(null);
     mutation.mutate(form);
+    if (researchEnabled && isPaid) {
+      setResearch(null);
+      researchMutation.mutate({ topic: form.topic, language: form.language });
+    }
   };
 
   return (
