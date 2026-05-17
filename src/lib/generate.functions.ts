@@ -371,7 +371,7 @@ RULES:
     const user = `TOPIC: ${data.topic}
 OUTPUT LANGUAGE (for script + summary): ${data.language}
 FORMAT: ${data.format ?? "unspecified"}
-SOURCES REQUIREMENT: provide AT LEAST ${sourceFloor} distinct, credible, verifiable source links${isLong ? " (long-form scripts need deep sourcing — aim for 12–20 sources spanning primary research, news, official orgs, and books)" : ""}. Each source must be real and independently verifiable. Never invent URLs.
+SOURCES REQUIREMENT: provide AT LEAST ${sourceFloor * 2} distinct, credible, verifiable source links${isLong ? " (long-form scripts need deep sourcing — aim for 20–30 sources spanning primary research, news, official orgs, and books)" : ""}. Each URL MUST be a real, currently-live page you are highly confident exists (dead links will be silently dropped, so over-cite from stable canonical sources). Never invent URLs or guess slugs.
 ${data.script ? `\nBASE SCRIPT (research MUST be grounded in and expand on this script — extract claims, verify them, find sources that support/contextualize each beat, and rewrite the final "script" field as a research-backed version of this):\n"""\n${data.script}\n"""\n` : ""}
 Do deep research and emit the structured payload now.`;
 
@@ -403,18 +403,12 @@ Do deep research and emit the structured payload now.`;
     if (!call?.function?.arguments) throw new Error("AI returned no research payload");
     const parsed = JSON.parse(call.function.arguments) as DeepResearchResult;
 
-    // Validate URLs in parallel — drop dead links, replace with Google search fallback so users always get a working link.
+    // Validate URLs in parallel — drop any link that doesn't resolve. Only keep real, working URLs.
     const rawSources = (parsed.sources ?? []).filter((s) => /^https?:\/\//i.test(s.url));
     const checked = await Promise.all(
-      rawSources.map(async (s) => {
-        const ok = await checkUrlAlive(s.url);
-        if (ok) return s;
-        // Fallback: Google search for the title — guaranteed-working URL.
-        const q = encodeURIComponent(`${s.title} ${data.topic}`.slice(0, 200));
-        return { ...s, url: `https://www.google.com/search?q=${q}` };
-      })
+      rawSources.map(async (s) => ({ s, ok: await checkUrlAlive(s.url) }))
     );
-    parsed.sources = checked;
+    parsed.sources = checked.filter((x) => x.ok).map((x) => x.s);
 
     return parsed;
   });
