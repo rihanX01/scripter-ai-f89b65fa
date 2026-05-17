@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   Sparkles, Wand2, Copy, Check, Download, RotateCcw, ArrowLeft,
   Image as ImageIcon, Video, Hash, Gauge, Film, Loader2, Flame, Timer, Zap,
-  Telescope, Lock, ExternalLink, BookOpen,
+  Telescope, Lock, ExternalLink,
 } from "lucide-react";
 import { generateScript, getMyUsage, deepResearch, type GenerateResult, type DeepResearchResult } from "@/lib/generate.functions";
 import { Nav } from "@/components/site/Nav";
