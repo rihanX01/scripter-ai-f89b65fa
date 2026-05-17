@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Particles } from "@/components/site/Particles";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -26,6 +27,8 @@ const categories = [
 ];
 
 function Landing() {
+  const { profile } = useAuth();
+  const currentPlan = profile?.plan ?? null;
   return (
     <div className="relative min-h-screen overflow-hidden">
       <Nav />
@@ -179,19 +182,27 @@ function Landing() {
 
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              { name: "Free", price: "$0", tag: "Try the engine", features: ["2 short scripts", "1 long-form script", "Per-line scene prompts", "Full SEO pack", "Ads enabled"], cta: "Start free", highlight: false },
-              { name: "Pro", price: "$19", tag: "Creators", features: ["10 short scripts", "6 long-form scripts", "Faster generation", "Better AI quality", "Ad-free", "Save history"], cta: "Go Pro", highlight: true },
-              { name: "Max", price: "$49", tag: "Faceless studios", features: ["20 short scripts", "10 long-form scripts", "Premium AI model", "Strongest hooks", "Highest virality tuning", "Priority queue"], cta: "Go Max", highlight: false },
-            ].map((p) => (
+              { key: "free", name: "Free", price: "$0", tag: "Try the engine", features: ["2 short scripts", "1 long-form script", "Per-line scene prompts", "Full SEO pack", "Ads enabled"], cta: "Start free", highlight: false },
+              { key: "pro", name: "Pro", price: "$19", tag: "Creators", features: ["10 short scripts", "6 long-form scripts", "Faster generation", "Better AI quality", "Ad-free", "Save history"], cta: "Go Pro", highlight: true },
+              { key: "max", name: "Max", price: "$49", tag: "Faceless studios", features: ["20 short scripts", "10 long-form scripts", "Premium AI model", "Strongest hooks", "Highest virality tuning", "Priority queue"], cta: "Go Max", highlight: false },
+            ].map((p) => {
+              const isCurrent = currentPlan === p.key;
+              // When user is on Max, freeze the other two cards
+              const isFrozen = currentPlan === "max" && p.key !== "max";
+              return (
               <motion.div
                 key={p.name}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className={`relative rounded-3xl p-7 ${p.highlight ? "glass-strong neon-border" : "glass"}`}
+                className={`relative rounded-3xl p-7 ${p.highlight ? "glass-strong neon-border" : "glass"} ${isFrozen ? "opacity-40 pointer-events-none grayscale" : ""} ${isCurrent ? "ring-2 ring-[var(--neon)]" : ""}`}
               >
-                {p.highlight && (
+                {isCurrent ? (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--neon)] text-background text-[10px] font-mono font-bold tracking-wider px-3 py-1 rounded-full">
+                    CURRENT PLAN
+                  </div>
+                ) : p.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[var(--neon)] to-[var(--plasma)] text-background text-[10px] font-mono font-bold tracking-wider px-3 py-1 rounded-full">
                     MOST LOVED
                   </div>
@@ -209,16 +220,23 @@ function Landing() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  to="/generate"
-                  className={`mt-7 w-full text-center block rounded-xl py-3 text-sm font-medium ${
-                    p.highlight ? "btn-hero" : "glass hover:bg-white/5 transition-colors"
-                  }`}
-                >
-                  {p.cta}
-                </Link>
+                {isCurrent ? (
+                  <div className="mt-7 w-full text-center block rounded-xl py-3 text-sm font-medium glass border border-[var(--neon)]/40 text-[var(--neon)]">
+                    Current
+                  </div>
+                ) : (
+                  <Link
+                    to="/generate"
+                    className={`mt-7 w-full text-center block rounded-xl py-3 text-sm font-medium ${
+                      p.highlight ? "btn-hero" : "glass hover:bg-white/5 transition-colors"
+                    }`}
+                  >
+                    {p.cta}
+                  </Link>
+                )}
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
