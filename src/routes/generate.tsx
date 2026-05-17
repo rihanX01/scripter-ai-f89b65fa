@@ -845,7 +845,7 @@ function ResearchView({ research }: { research: DeepResearchResult }) {
                   className="text-sm font-medium text-foreground hover:text-[var(--neon)] inline-flex items-center gap-1.5">
                   <ExternalLink className="size-3.5 shrink-0" /> {s.title}
                 </a>
-                <div className="text-[10px] font-mono text-muted-foreground truncate mt-0.5">{s.url}</div>
+                <div className="text-[10px] font-mono text-muted-foreground break-all mt-0.5">{s.url}</div>
                 <div className="text-xs text-foreground/75 mt-1.5 leading-relaxed">{s.snippet}</div>
               </li>
             ))}
