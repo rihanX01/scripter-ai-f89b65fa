@@ -85,6 +85,7 @@ function GeneratePage() {
   const researchMutation = useMutation({
     mutationFn: (input: { topic: string; language: Form["language"] }) => researchFn({ data: input }),
     onSuccess: (data) => setResearch(data),
+    onError: () => setResearchEnabled(false),
   });
 
   const setFormat = (f: "short" | "long") => {
