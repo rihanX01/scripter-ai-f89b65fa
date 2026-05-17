@@ -30,7 +30,6 @@ function Overview() {
     retry: 1,
   });
 
-  if (isLoading || !data) return <div className="text-muted-foreground">Loading dashboard…</div>;
   if (isError) {
     return (
       <div className="space-y-4">
@@ -43,6 +42,7 @@ function Overview() {
       </div>
     );
   }
+  if (isLoading || !data) return <div className="text-muted-foreground">Loading dashboard…</div>;
 
   const planData = [
     { name: "Free", value: data.planCounts.free, color: "oklch(0.7 0.04 260)" },
