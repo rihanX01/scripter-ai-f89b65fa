@@ -327,8 +327,8 @@ function GeneratePage() {
                 )}
               </AnimatePresence>
 
-              {/* Research panel — only after script is generated, with show/hide toggle */}
-              {result && isPaid && (
+              {/* Research panel — runs in parallel with script generation */}
+              {isPaid && (research || researchMutation.isPending) && (
                 <div className="glass-strong rounded-3xl border border-[var(--plasma)]/30 overflow-hidden">
                   <div className="flex items-center justify-between gap-3 p-4 md:p-5">
                     <div className="flex items-center gap-3 min-w-0">
