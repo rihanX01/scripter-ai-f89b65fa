@@ -791,23 +791,12 @@ function ResearchView({ research }: { research: DeepResearchResult }) {
   };
 
   return (
-    <div className="glass-strong rounded-3xl p-6 border border-[var(--plasma)]/20">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <div className="flex items-center gap-2">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-[var(--plasma)] to-[var(--neon)] flex items-center justify-center">
-            <Telescope className="size-4 text-background" />
-          </div>
-          <div>
-            <div className="font-display text-lg font-bold">Deep Research</div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">credible sources · research-backed script</div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <CopyBtn text={research.script} />
-          <button onClick={downloadMd} className="btn-hero rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1.5">
-            <Download className="size-3.5" /> .md
-          </button>
-        </div>
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center justify-end gap-2 mb-4">
+        <CopyBtn text={research.script} />
+        <button onClick={downloadMd} className="btn-hero rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1.5">
+          <Download className="size-3.5" /> .md
+        </button>
       </div>
 
       <Section title="Summary">
