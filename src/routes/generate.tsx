@@ -103,7 +103,7 @@ function GeneratePage() {
     mutation.mutate(form);
     if (researchEnabled && isPaid) {
       setResearch(null);
-      researchMutation.mutate({ topic: form.topic, language: form.language });
+      researchMutation.mutate({ topic: form.topic, language: form.language, format: form.format });
     }
   };
 
