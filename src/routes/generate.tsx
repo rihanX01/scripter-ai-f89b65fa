@@ -14,6 +14,7 @@ import { Particles } from "@/components/site/Particles";
 import { AdSlot } from "@/components/site/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/generate")({
   component: GeneratePage,
@@ -60,6 +61,7 @@ function GeneratePage() {
   });
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [research, setResearch] = useState<DeepResearchResult | null>(null);
+  const [researchEnabled, setResearchEnabled] = useState(false);
 
   const fn = useServerFn(generateScript);
   const usageFn = useServerFn(getMyUsage);
