@@ -662,3 +662,120 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
+
+function ResearchView({ research }: { research: DeepResearchResult }) {
+  const downloadMd = () => {
+    const md = [
+      `# Deep Research — ${research.topic}`,
+      ``,
+      `## Summary`,
+      research.summary,
+      ``,
+      `## Key findings`,
+      ...research.key_findings.map((k) => `- ${k}`),
+      ``,
+      `## Stats`,
+      ...research.stats.map((s) => `- **${s.label}:** ${s.value}`),
+      ``,
+      `## Viral angles`,
+      ...research.angles.map((a) => `- ${a}`),
+      ``,
+      `## Sources`,
+      ...research.sources.map((s) => `- [${s.title}](${s.url}) — ${s.snippet}`),
+      ``,
+      `## Research-backed script`,
+      research.script,
+    ].join("\n");
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "deep-research.md"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="glass-strong rounded-3xl p-6 border border-[var(--plasma)]/20">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-2">
+          <div className="size-9 rounded-xl bg-gradient-to-br from-[var(--plasma)] to-[var(--neon)] flex items-center justify-center">
+            <Telescope className="size-4 text-background" />
+          </div>
+          <div>
+            <div className="font-display text-lg font-bold">Deep Research</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">credible sources · research-backed script</div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <CopyBtn text={research.script} />
+          <button onClick={downloadMd} className="btn-hero rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1.5">
+            <Download className="size-3.5" /> .md
+          </button>
+        </div>
+      </div>
+
+      <Section title="Summary">
+        <div className="glass rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line">{research.summary}</div>
+      </Section>
+
+      <div className="grid md:grid-cols-2 gap-4 mt-5">
+        <Section title="Key findings">
+          <ul className="space-y-1.5">
+            {research.key_findings.map((k, i) => (
+              <li key={i} className="glass rounded-lg px-3 py-2 text-xs leading-relaxed flex gap-2">
+                <span className="text-[var(--neon)] font-mono shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                <span>{k}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+        <Section title="Stats & numbers">
+          <ul className="space-y-1.5">
+            {research.stats.map((s, i) => (
+              <li key={i} className="glass rounded-lg px-3 py-2 text-xs">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                <div className="font-display text-sm">{s.value}</div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      </div>
+
+      <div className="mt-5">
+        <Section title="Untapped viral angles">
+          <div className="flex flex-wrap gap-2">
+            {research.angles.map((a, i) => (
+              <span key={i} className="text-xs bg-[var(--plasma)]/10 border border-[var(--plasma)]/30 rounded-full px-3 py-1.5">{a}</span>
+            ))}
+          </div>
+        </Section>
+      </div>
+
+      <div className="mt-5">
+        <Section title={`Credible sources (${research.sources.length})`}>
+          <ul className="space-y-2">
+            {research.sources.map((s, i) => (
+              <li key={i} className="glass rounded-xl p-3">
+                <a href={s.url} target="_blank" rel="noopener noreferrer"
+                  className="text-sm font-medium text-foreground hover:text-[var(--neon)] inline-flex items-center gap-1.5">
+                  <ExternalLink className="size-3.5 shrink-0" /> {s.title}
+                </a>
+                <div className="text-[10px] font-mono text-muted-foreground truncate mt-0.5">{s.url}</div>
+                <div className="text-xs text-foreground/75 mt-1.5 leading-relaxed">{s.snippet}</div>
+              </li>
+            ))}
+          </ul>
+          <div className="text-[10px] text-muted-foreground/70 mt-2 italic">Always verify sources before publishing — AI can occasionally cite outdated or imprecise pages.</div>
+        </Section>
+      </div>
+
+      <div className="mt-5">
+        <Section title="Research-backed script">
+          <div className="glass rounded-xl p-4 text-sm leading-relaxed whitespace-pre-line font-display">
+            <div className="flex justify-end mb-2"><CopyBtn text={research.script} /></div>
+            {research.script}
+          </div>
+        </Section>
+      </div>
+    </div>
+  );
+}
