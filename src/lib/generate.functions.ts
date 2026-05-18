@@ -8,8 +8,10 @@ const inputSchema = z.object({
   category: z.string().min(2).max(40),
   language: z.enum(["english", "hindi", "hinglish"]),
   format: z.enum(["short", "long"]),
-  // Custom target word count (optional — if omitted, uses format defaults)
-  target_words: z.number().int().min(40).max(2000).optional(),
+  // Custom target word count (optional — if omitted, uses format defaults). Max raised to 5000 for Max plan custom long-form.
+  target_words: z.number().int().min(40).max(5000).optional(),
+  // Podcast-only: number of killer interview questions to generate (Max plan).
+  podcast_questions: z.number().int().min(3).max(30).optional(),
 });
 
 export type GenerateInput = z.infer<typeof inputSchema>;
