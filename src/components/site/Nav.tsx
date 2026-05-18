@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Sparkles, Shield } from "lucide-react";
+import { Sparkles, Shield, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export function Nav() {
