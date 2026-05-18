@@ -110,9 +110,18 @@ function GeneratePage() {
     },
   });
 
+  const isPodcast = form.category.toLowerCase() === "podcast";
+
   const setFormat = (f: "short" | "long") => {
     setForm((p) => ({ ...p, format: f, target_words: f === "short" ? 95 : 900 }));
   };
+
+  // When switching to Podcast, force long format
+  useEffect(() => {
+    if (isPodcast && form.format !== "long") {
+      setForm((p) => ({ ...p, format: "long", target_words: 900 }));
+    }
+  }, [isPodcast, form.format]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
