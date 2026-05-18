@@ -20,6 +20,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedHelpTicketIdRouteImport } from './routes/_authenticated/help.$ticketId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin.security'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin.plans'
@@ -81,6 +82,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedHelpTicketIdRoute =
+  AuthenticatedHelpTicketIdRouteImport.update({
+    id: '/$ticketId',
+    path: '/$ticketId',
+    getParentRoute: () => AuthenticatedHelpRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -122,7 +129,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/help': typeof AuthenticatedHelpRoute
+  '/help': typeof AuthenticatedHelpRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/help/$ticketId': typeof AuthenticatedHelpTicketIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -139,7 +147,7 @@ export interface FileRoutesByTo {
   '/ideas': typeof IdeasRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/help': typeof AuthenticatedHelpRoute
+  '/help': typeof AuthenticatedHelpRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/help/$ticketId': typeof AuthenticatedHelpTicketIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -159,7 +168,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/_authenticated/help': typeof AuthenticatedHelpRoute
+  '/_authenticated/help': typeof AuthenticatedHelpRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/help/$ticketId': typeof AuthenticatedHelpTicketIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/security'
     | '/admin/users'
+    | '/help/$ticketId'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/security'
     | '/admin/users'
+    | '/help/$ticketId'
     | '/admin'
   id:
     | '__root__'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/plans'
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/users'
+    | '/_authenticated/help/$ticketId'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/help/$ticketId': {
+      id: '/_authenticated/help/$ticketId'
+      path: '/$ticketId'
+      fullPath: '/help/$ticketId'
+      preLoaderRoute: typeof AuthenticatedHelpTicketIdRouteImport
+      parentRoute: typeof AuthenticatedHelpRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -384,14 +404,25 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedHelpRouteChildren {
+  AuthenticatedHelpTicketIdRoute: typeof AuthenticatedHelpTicketIdRoute
+}
+
+const AuthenticatedHelpRouteChildren: AuthenticatedHelpRouteChildren = {
+  AuthenticatedHelpTicketIdRoute: AuthenticatedHelpTicketIdRoute,
+}
+
+const AuthenticatedHelpRouteWithChildren =
+  AuthenticatedHelpRoute._addFileChildren(AuthenticatedHelpRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
-  AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
+  AuthenticatedHelpRoute: typeof AuthenticatedHelpRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
-  AuthenticatedHelpRoute: AuthenticatedHelpRoute,
+  AuthenticatedHelpRoute: AuthenticatedHelpRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
