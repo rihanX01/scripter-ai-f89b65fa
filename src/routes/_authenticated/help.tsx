@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { listMyTickets, createTicket, isHumanOnline } from "@/lib/support.functions";
 import { Plus, MessageCircle, Loader2, Circle } from "lucide-react";
