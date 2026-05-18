@@ -154,3 +154,26 @@ Generate exactly ${effectiveCount} world-class viral ideas now. Be ruthless abou
       throw new Error("AI returned malformed ideas payload");
     }
   });
+
+export type IdeasUsage = {
+  plan: "free" | "pro" | "max";
+  ideas_used: number;
+  ideas_limit: number;
+  ideas_per_request_limit: number;
+  reset_at: string;
+};
+
+export const getIdeasUsage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<IdeasUsage> => {
+    const { data, error } = await context.supabase.rpc("get_my_usage");
+    if (error) throw new Error(error.message);
+    const u = data as any;
+    return {
+      plan: u.plan,
+      ideas_used: u.ideas_used ?? 0,
+      ideas_limit: u.ideas_limit ?? 0,
+      ideas_per_request_limit: u.ideas_per_request_limit ?? 3,
+      reset_at: u.reset_at,
+    };
+  });
