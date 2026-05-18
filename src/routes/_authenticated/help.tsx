@@ -89,8 +89,8 @@ function HelpPage() {
               <StatusBadge status={t.status} />
             </Link>
           ))}
-          {tickets.data && tickets.data.length === 0 && !create.isPending && (
-            <div className="text-sm text-muted-foreground">No tickets yet — opening your first chat…</div>
+          {tickets.data && tickets.data.length === 0 && (
+            <div className="text-sm text-muted-foreground">No tickets yet — start a new chat above.</div>
           )}
         </div>
       </div>
