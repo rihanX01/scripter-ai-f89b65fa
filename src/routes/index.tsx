@@ -216,7 +216,7 @@ function Landing() {
                 <div className="text-xs font-mono text-muted-foreground">{p.tag}</div>
                 <div className="mt-2 font-display text-2xl font-bold">{p.name}</div>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="font-display text-5xl font-bold">{p.price}</span>
+                  <span className="font-display text-5xl font-bold">{formatPrice(p.priceUsd, region)}</span>
                   <span className="text-muted-foreground text-sm">/mo</span>
                 </div>
                 <ul className="mt-6 space-y-2.5">
