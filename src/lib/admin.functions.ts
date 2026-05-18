@@ -182,6 +182,7 @@ export const updatePlanLimit = createServerFn({ method: "POST" })
     shorts_limit: z.coerce.number().int().min(0).max(100000),
     longs_limit: z.coerce.number().int().min(0).max(100000),
     ideas_limit: z.coerce.number().int().min(0).max(100000),
+    ideas_per_request_limit: z.coerce.number().int().min(1).max(50),
     ad_free: z.coerce.boolean(),
     priority_queue: z.coerce.boolean(),
     ai_model: z.string().min(2).max(100),
@@ -193,6 +194,7 @@ export const updatePlanLimit = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("plan_limits").upsert({
       plan: data.plan,
       shorts_limit: data.shorts_limit, longs_limit: data.longs_limit, ideas_limit: data.ideas_limit,
+      ideas_per_request_limit: data.ideas_per_request_limit,
       ad_free: data.ad_free, priority_queue: data.priority_queue, ai_model: data.ai_model,
       price_usd: data.price_usd,
     }, { onConflict: "plan" });
