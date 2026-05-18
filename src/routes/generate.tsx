@@ -135,9 +135,14 @@ function GeneratePage() {
 
       <main className="relative pt-32 pb-24 px-4 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-            <ArrowLeft className="size-4" /> back
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="size-4" /> back
+            </Link>
+            <Link to="/ideas" className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full glass hover:text-[var(--neon)] transition-colors">
+              <Sparkles className="size-3.5" /> Get Idea
+            </Link>
+          </div>
 
           <div className="grid lg:grid-cols-[420px_1fr] gap-6">
             {/* INPUT PANEL */}
