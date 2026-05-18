@@ -222,11 +222,22 @@ function IdeasPage() {
 
           <button
             onClick={() => mut.mutate(form)}
-            disabled={mut.isPending}
+            disabled={mut.isPending || limitReached}
             className="btn-hero rounded-2xl px-6 py-3 mt-6 w-full sm:w-auto inline-flex items-center justify-center gap-2 font-medium disabled:opacity-50"
           >
-            {mut.isPending ? <><Loader2 className="size-4 animate-spin"/> Brewing viral ideas…</> : <><Sparkles className="size-4"/> Generate Ideas</>}
+            {mut.isPending ? (
+              <><Loader2 className="size-4 animate-spin"/> Brewing viral ideas…</>
+            ) : limitReached ? (
+              <><Lock className="size-4"/> Daily limit reached · resets in ~{resetHrs}h</>
+            ) : (
+              <><Sparkles className="size-4"/> Generate Ideas</>
+            )}
           </button>
+          {limitReached && (
+            <Link to="/" className="block mt-3 text-center text-xs text-[var(--neon)] underline-offset-4 hover:underline">
+              Upgrade your plan for more daily idea generations →
+            </Link>
+          )}
         </div>
 
         {/* AdSense slot — free users only */}
