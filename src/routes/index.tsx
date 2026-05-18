@@ -7,6 +7,7 @@ import {
 import { Nav } from "@/components/site/Nav";
 import { Particles } from "@/components/site/Particles";
 import { useAuth } from "@/hooks/use-auth";
+import { useRegionPrice, formatPrice } from "@/hooks/use-region-price";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -29,6 +30,7 @@ const categories = [
 function Landing() {
   const { profile } = useAuth();
   const currentPlan = profile?.plan ?? null;
+  const region = useRegionPrice();
   return (
     <div className="relative min-h-screen overflow-hidden">
       <Nav />
@@ -182,9 +184,9 @@ function Landing() {
 
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              { key: "free", name: "Free", price: "$0", tag: "Try the engine", features: ["2 short scripts", "1 long-form script", "Per-line scene prompts", "Full SEO pack", "Ads enabled"], cta: "Start free", highlight: false },
-              { key: "pro", name: "Pro", price: "$19", tag: "Creators", features: ["10 short scripts", "6 long-form scripts", "Faster generation", "Better AI quality", "Ad-free", "Save history"], cta: "Go Pro", highlight: true },
-              { key: "max", name: "Max", price: "$49", tag: "Faceless studios", features: ["20 short scripts", "10 long-form scripts", "Premium AI model", "Strongest hooks", "Highest virality tuning", "Priority queue"], cta: "Go Max", highlight: false },
+              { key: "free", name: "Free", priceUsd: 0, tag: "Try the engine", features: ["2 short scripts", "1 long-form script", "Per-line scene prompts", "Full SEO pack", "Ads enabled"], cta: "Start free", highlight: false },
+              { key: "pro", name: "Pro", priceUsd: 19, tag: "Creators", features: ["10 short scripts", "6 long-form scripts", "Faster generation", "Better AI quality", "Ad-free", "Save history"], cta: "Go Pro", highlight: true },
+              { key: "max", name: "Max", priceUsd: 49, tag: "Faceless studios", features: ["20 short scripts", "10 long-form scripts", "Premium AI model", "Strongest hooks", "Highest virality tuning", "Priority queue"], cta: "Go Max", highlight: false },
             ].map((p) => {
               const isCurrent = currentPlan === p.key;
               // Freeze rules:
@@ -214,7 +216,7 @@ function Landing() {
                 <div className="text-xs font-mono text-muted-foreground">{p.tag}</div>
                 <div className="mt-2 font-display text-2xl font-bold">{p.name}</div>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="font-display text-5xl font-bold">{p.price}</span>
+                  <span className="font-display text-5xl font-bold">{formatPrice(p.priceUsd, region)}</span>
                   <span className="text-muted-foreground text-sm">/mo</span>
                 </div>
                 <ul className="mt-6 space-y-2.5">
