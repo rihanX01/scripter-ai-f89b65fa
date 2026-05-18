@@ -60,6 +60,21 @@ function GeneratePage() {
     target_words: 95,
   });
   const [result, setResult] = useState<GenerateResult | null>(null);
+
+  // Prefill from "Get Idea" page
+  useEffect(() => {
+    const t = sessionStorage.getItem("prefill_topic");
+    const c = sessionStorage.getItem("prefill_category");
+    if (t || c) {
+      setForm((p) => ({
+        ...p,
+        topic: t ?? p.topic,
+        category: c && CATEGORIES.includes(c) ? c : p.category,
+      }));
+      sessionStorage.removeItem("prefill_topic");
+      sessionStorage.removeItem("prefill_category");
+    }
+  }, []);
   const [research, setResearch] = useState<DeepResearchResult | null>(null);
   const [researchEnabled, setResearchEnabled] = useState(false);
   const [researchOpen, setResearchOpen] = useState(true);
