@@ -44,6 +44,23 @@ type Form = {
 function IdeasPage() {
   const navigate = useNavigate();
   const fn = useServerFn(getViralIdeas);
+  const usageFn = useServerFn(getIdeasUsage);
+  const qc = useQueryClient();
+
+  const { data: usage } = useQuery({
+    queryKey: ["ideas-usage"],
+    queryFn: () => usageFn(),
+    refetchOnWindowFocus: true,
+  });
+
+  const perReqCap = Math.max(1, Math.min(15, usage?.ideas_per_request_limit ?? 15));
+  const dailyLimit = usage?.ideas_limit ?? 0;
+  const dailyUsed = usage?.ideas_used ?? 0;
+  const dailyRemaining = Math.max(0, dailyLimit - dailyUsed);
+  const limitReached = !!usage && dailyRemaining <= 0;
+  const resetHrs = usage?.reset_at
+    ? Math.max(0, Math.ceil((new Date(usage.reset_at).getTime() - Date.now()) / 3_600_000))
+    : 0;
 
   const [form, setForm] = useState<Form>({
     category: "auto",
@@ -53,11 +70,20 @@ function IdeasPage() {
     audience: "",
     vibe: "",
   });
+
+  useEffect(() => {
+    setForm((f) => (f.count > perReqCap ? { ...f, count: perReqCap } : f));
+  }, [perReqCap]);
+
   const [result, setResult] = useState<IdeaResult | null>(null);
 
   const mut = useMutation({
-    mutationFn: (input: Form) => fn({ data: input }),
-    onSuccess: (data) => setResult(data),
+    mutationFn: (input: Form) => fn({ data: { ...input, count: Math.min(input.count, perReqCap) } }),
+    onSuccess: (data) => {
+      setResult(data);
+      qc.invalidateQueries({ queryKey: ["ideas-usage"] });
+    },
+    onError: () => qc.invalidateQueries({ queryKey: ["ideas-usage"] }),
   });
 
   return (
