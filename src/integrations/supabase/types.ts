@@ -177,6 +177,7 @@ export type Database = {
         Row: {
           ad_free: boolean
           ai_model: string
+          ideas_limit: number
           longs_limit: number
           plan: Database["public"]["Enums"]["subscription_plan"]
           price_usd: number
@@ -187,6 +188,7 @@ export type Database = {
         Insert: {
           ad_free?: boolean
           ai_model: string
+          ideas_limit?: number
           longs_limit: number
           plan: Database["public"]["Enums"]["subscription_plan"]
           price_usd?: number
@@ -197,6 +199,7 @@ export type Database = {
         Update: {
           ad_free?: boolean
           ai_model?: string
+          ideas_limit?: number
           longs_limit?: number
           plan?: Database["public"]["Enums"]["subscription_plan"]
           price_usd?: number
@@ -248,6 +251,7 @@ export type Database = {
       usage_counters: {
         Row: {
           id: string
+          ideas_used: number
           longs_used: number
           shorts_used: number
           updated_at: string
@@ -256,6 +260,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          ideas_used?: number
           longs_used?: number
           shorts_used?: number
           updated_at?: string
@@ -264,6 +269,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          ideas_used?: number
           longs_used?: number
           shorts_used?: number
           updated_at?: string
