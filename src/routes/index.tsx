@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   Sparkles, Zap, Wand2, Film, Languages, Hash, Image as ImageIcon,
   Video, Brain, Rocket, Check, ChevronRight, Flame, Clapperboard, Eye,
@@ -8,6 +9,7 @@ import { Nav } from "@/components/site/Nav";
 import { Particles } from "@/components/site/Particles";
 import { useAuth } from "@/hooks/use-auth";
 import { useRegionPrice, formatPrice } from "@/hooks/use-region-price";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: Landing,
