@@ -7,7 +7,7 @@ import { listMyTickets, createTicket, isHumanOnline } from "@/lib/support.functi
 import { Plus, MessageCircle, Loader2, Circle } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/help")({
+export const Route = createFileRoute("/_authenticated/help/")({
   head: () => ({ meta: [{ title: "Help & Support — ShortForge AI" }] }),
   component: HelpPage,
 });
