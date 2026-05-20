@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { bootstrapCurrentUser } from "@/lib/auth.functions";
 
 type Profile = {
   user_id: string;
@@ -23,20 +25,28 @@ type Ctx = {
 const AuthContext = createContext<Ctx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const bootstrap = useServerFn(bootstrapCurrentUser);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadExtras = async (uid: string) => {
-    const [{ data: prof, error: profileError }, { data: roles, error: rolesError }] = await Promise.all([
-      supabase.from("profiles").select("user_id,display_name,avatar_url,plan,is_banned").eq("user_id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-    ]);
-    if (profileError) console.error("Profile load failed", profileError);
-    if (rolesError) console.error("Role load failed", rolesError);
-    setProfile(profileError ? null : (prof as Profile | null));
-    setIsAdmin(!rolesError && !!roles?.some((r) => r.role === "admin"));
+    try {
+      const bootstrapped = await bootstrap();
+      setProfile((bootstrapped.profile as Profile | null) ?? null);
+      setIsAdmin(bootstrapped.isAdmin);
+    } catch (bootstrapError) {
+      console.error("User bootstrap failed", bootstrapError);
+      const [{ data: prof, error: profileError }, { data: roles, error: rolesError }] = await Promise.all([
+        supabase.from("profiles").select("user_id,display_name,avatar_url,plan,is_banned").eq("user_id", uid).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+      ]);
+      if (profileError) console.error("Profile load failed", profileError);
+      if (rolesError) console.error("Role load failed", rolesError);
+      setProfile(profileError ? null : (prof as Profile | null));
+      setIsAdmin(!rolesError && !!roles?.some((r) => r.role === "admin"));
+    }
   };
 
   const refresh = async () => {
