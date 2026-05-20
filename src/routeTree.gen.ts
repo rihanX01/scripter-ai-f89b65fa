@@ -17,8 +17,8 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
-import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedHelpIndexRouteImport } from './routes/_authenticated/help.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedHelpTicketIdRouteImport } from './routes/_authenticated/help.$ticketId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
@@ -68,14 +68,14 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
-  id: '/help',
-  path: '/help',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHelpIndexRoute = AuthenticatedHelpIndexRouteImport.update({
+  id: '/help/',
+  path: '/help/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -85,9 +85,9 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 } as any)
 const AuthenticatedHelpTicketIdRoute =
   AuthenticatedHelpTicketIdRouteImport.update({
-    id: '/$ticketId',
-    path: '/$ticketId',
-    getParentRoute: () => AuthenticatedHelpRoute,
+    id: '/help/$ticketId',
+    path: '/help/$ticketId',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
@@ -136,7 +136,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/help': typeof AuthenticatedHelpRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -147,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/help/$ticketId': typeof AuthenticatedHelpTicketIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/help/': typeof AuthenticatedHelpIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -155,7 +155,6 @@ export interface FileRoutesByTo {
   '/ideas': typeof IdeasRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/help': typeof AuthenticatedHelpRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -166,6 +165,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/help/$ticketId': typeof AuthenticatedHelpTicketIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/help': typeof AuthenticatedHelpIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,7 +177,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/_authenticated/help': typeof AuthenticatedHelpRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -188,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/help/$ticketId': typeof AuthenticatedHelpTicketIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/help/': typeof AuthenticatedHelpIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,7 +199,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/admin'
-    | '/help'
     | '/admin/login'
     | '/admin/announcements'
     | '/admin/audit'
@@ -210,6 +209,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/help/$ticketId'
     | '/admin/'
+    | '/help/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,7 +218,6 @@ export interface FileRouteTypes {
     | '/ideas'
     | '/login'
     | '/reset-password'
-    | '/help'
     | '/admin/login'
     | '/admin/announcements'
     | '/admin/audit'
@@ -229,6 +228,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/help/$ticketId'
     | '/admin'
+    | '/help'
   id:
     | '__root__'
     | '/'
@@ -239,7 +239,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
-    | '/_authenticated/help'
     | '/admin/login'
     | '/_authenticated/admin/announcements'
     | '/_authenticated/admin/audit'
@@ -250,6 +249,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/help/$ticketId'
     | '/_authenticated/admin/'
+    | '/_authenticated/help/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -321,18 +321,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/help': {
-      id: '/_authenticated/help'
-      path: '/help'
-      fullPath: '/help'
-      preLoaderRoute: typeof AuthenticatedHelpRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/help/': {
+      id: '/_authenticated/help/'
+      path: '/help'
+      fullPath: '/help/'
+      preLoaderRoute: typeof AuthenticatedHelpIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/': {
@@ -344,10 +344,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/help/$ticketId': {
       id: '/_authenticated/help/$ticketId'
-      path: '/$ticketId'
+      path: '/help/$ticketId'
       fullPath: '/help/$ticketId'
       preLoaderRoute: typeof AuthenticatedHelpTicketIdRouteImport
-      parentRoute: typeof AuthenticatedHelpRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
@@ -426,25 +426,16 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface AuthenticatedHelpRouteChildren {
-  AuthenticatedHelpTicketIdRoute: typeof AuthenticatedHelpTicketIdRoute
-}
-
-const AuthenticatedHelpRouteChildren: AuthenticatedHelpRouteChildren = {
-  AuthenticatedHelpTicketIdRoute: AuthenticatedHelpTicketIdRoute,
-}
-
-const AuthenticatedHelpRouteWithChildren =
-  AuthenticatedHelpRoute._addFileChildren(AuthenticatedHelpRouteChildren)
-
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
-  AuthenticatedHelpRoute: typeof AuthenticatedHelpRouteWithChildren
+  AuthenticatedHelpTicketIdRoute: typeof AuthenticatedHelpTicketIdRoute
+  AuthenticatedHelpIndexRoute: typeof AuthenticatedHelpIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
-  AuthenticatedHelpRoute: AuthenticatedHelpRouteWithChildren,
+  AuthenticatedHelpTicketIdRoute: AuthenticatedHelpTicketIdRoute,
+  AuthenticatedHelpIndexRoute: AuthenticatedHelpIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -464,13 +455,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
