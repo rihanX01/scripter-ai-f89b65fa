@@ -1,10 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
-import { listMyTickets, createTicket, isHumanOnline } from "@/lib/support.functions";
-import { Plus, MessageCircle, Loader2, Circle } from "lucide-react";
+import { createTicket, getTicket, isHumanOnline, listMyTickets, sendUserMessage } from "@/lib/support.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { Bot, Circle, Headphones, Loader2, MessageCircle, Plus, Send, UserCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/help/")({
@@ -17,8 +18,8 @@ function HelpPage() {
   const onlineFn = useServerFn(isHumanOnline);
   const createFn = useServerFn(createTicket);
   const qc = useQueryClient();
-  const navigate = useNavigate();
   const [subject, setSubject] = useState("");
+  const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
 
   const tickets = useQuery({ queryKey: ["my-tickets"], queryFn: () => listFn(), refetchInterval: 8000 });
   const online = useQuery({ queryKey: ["human-online"], queryFn: () => onlineFn(), refetchInterval: 30000 });
@@ -28,7 +29,7 @@ function HelpPage() {
     onSuccess: ({ id }) => {
       setSubject("");
       qc.invalidateQueries({ queryKey: ["my-tickets"] });
-      navigate({ to: "/help/$ticketId", params: { ticketId: id } });
+      setActiveTicketId(id);
     },
     onError: (e: any) => toast.error(e?.message ?? "Couldn't create ticket"),
   });
