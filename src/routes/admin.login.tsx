@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAdminLogin } from "@/lib/admin-security.functions";
+import { bootstrapCurrentUser } from "@/lib/auth.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ const fieldCls =
 function AdminLoginPage() {
   const nav = useNavigate();
   const record = useServerFn(recordAdminLogin);
+  const bootstrap = useServerFn(bootstrapCurrentUser);
   const { refresh, loading, isAdmin } = useAuth();
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState("");
@@ -67,11 +69,9 @@ function AdminLoginPage() {
         }
         return;
       }
-      // Verify admin role before granting console access.
-      const { data: roles } = await supabase
-        .from("user_roles").select("role").eq("user_id", data.session.user.id);
-      const isAdmin = roles?.some((r) => r.role === "admin");
-      if (!isAdmin) {
+      // Recreate missing profile/roles after data reset and grant admin if no admin exists.
+      const bootstrapped = await bootstrap();
+      if (!bootstrapped.isAdmin) {
         await supabase.auth.signOut();
         toast.error("This account does not have admin access.");
         return;
