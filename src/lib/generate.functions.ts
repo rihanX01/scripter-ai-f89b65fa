@@ -206,8 +206,8 @@ export const generateScript = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
   .handler(async ({ data, context }): Promise<GenerateResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
 
     const { supabase, userId } = context;
 
@@ -234,9 +234,9 @@ export const generateScript = createServerFn({ method: "POST" })
 
     // 2. Resolve model from the user's actual plan
     const tierModel: Record<string, string> = {
-      free: "google/gemini-2.5-flash",
-      pro: "google/gemini-2.5-flash",
-      max: "google/gemini-2.5-pro",
+      free: "gpt-4o-mini",
+      pro: "gpt-4o-mini",
+      max: "gpt-4o",
     };
 
     const targetWords = data.target_words ?? (data.format === "short" ? 95 : 900);
@@ -266,7 +266,7 @@ TARGET WORD COUNT: exactly ${targetWords} words (acceptable range: ${minW}–${m
 
 Generate the script pack now. Be ruthless about quality. No filler. Hook hard. Loop the ending.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -366,8 +366,8 @@ export const deepResearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => researchInputSchema.parse(d))
   .handler(async ({ data, context }): Promise<DeepResearchResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
 
     const { supabase } = context;
 
@@ -417,9 +417,9 @@ SOURCING REQUIREMENT (CRITICAL):
 
 Do deep research now and emit the structured payload.`;
 
-    const model = plan === "max" ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+    const model = plan === "max" ? "gpt-4o" : "gpt-4o-mini";
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({

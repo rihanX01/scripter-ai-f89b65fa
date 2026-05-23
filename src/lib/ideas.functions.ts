@@ -94,8 +94,8 @@ export const getViralIdeas = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
   .handler(async ({ data, context }): Promise<IdeaResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
 
     const { supabase } = context;
 
@@ -108,7 +108,7 @@ export const getViralIdeas = createServerFn({ method: "POST" })
     const { data: usage, error: quotaErr } = await supabase.rpc("consume_quota", { _format: "ideas" });
     if (quotaErr) throw new Error(parseQuotaError(quotaErr.message));
     const plan = ((usage as { plan?: string } | null)?.plan as "free" | "pro" | "max" | undefined) ?? "free";
-    const model = plan === "max" ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+    const model = plan === "max" ? "gpt-4o" : "gpt-4o-mini";
 
     const userPrompt = `CATEGORY: ${data.category}${data.category === "auto" ? " (pick the hottest sub-niches across all categories)" : ""}
 LANGUAGE: ${data.language}
@@ -117,7 +117,7 @@ ${data.audience ? `AUDIENCE: ${data.audience}\n` : ""}${data.vibe ? `VIBE: ${dat
 
 Generate exactly ${effectiveCount} world-class viral ideas now. Be ruthless about originality — no generic "Top 10 facts" filler. Each idea must have a unique, scroll-stopping angle. Each idea must include 8 to 12 lowercase hashtags with no spaces.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
